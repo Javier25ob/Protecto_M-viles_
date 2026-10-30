@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Depósito Dental</title>
+  <meta name="description" content="Suministros para laboratorios dentales: catálogo y pedidos.">
+  <meta name="theme-color" content="#0b6fb8">
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- SPA: esta es la UNICA página. Las "pantallas" se dibujan dentro de <main id="app">. -->
+  <header class="topbar">
+    <h1 id="titulo">Depósito Dental</h1>
+    <button id="btn-instalar" class="btn-instalar" type="button" hidden>Instalar app</button>
+  </header>
+
+  <main id="app" aria-live="polite"></main>
+
+  <nav class="bottom-nav" aria-label="Navegación principal">
+    <a href="#/catalogo" data-ruta="catalogo">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>
+      <span>Catálogo</span>
+    </a>
+    <a href="#/carrito" data-ruta="carrito" aria-label="Carrito">
+      <span class="icono-con-insignia">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a2 2 0 1 0 2 2 2 2 0 0 0-2-2zm10 0a2 2 0 1 0 2 2 2 2 0 0 0-2-2zM1 2v2h2l3.6 7.59-1.35 2.45A2 2 0 0 0 7 17h12v-2H7.42a.25.25 0 0 1-.22-.37L8.1 13h7.45a2 2 0 0 0 1.75-1.03L21 5H5.21l-.94-2z"/></svg>
+        <span id="insignia-carrito" class="insignia" hidden>0</span>
+      </span>
+      <span>Carrito</span>
+    </a>
+    <a href="#/registro" data-ruta="registro">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-9 2v-2H4v2H2v2h2v2h2v-2h2v-2zm9 0c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      <span>Registro</span>
+    </a>
+  </nav>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
