@@ -80,7 +80,12 @@ export function vistaRegistro() {
       guardarUsuarioActual({ id: creado.id, name: creado.name, email: creado.email });
       formulario.reset();
       mensajes.replaceChildren(
-        el("p", { class: "aviso exito" }, `¡Registro exitoso! Bienvenido, ${creado.name}.`)
+        el(
+          "div",
+          { class: "aviso exito" },
+          el("p", {}, `¡Registro exitoso! Bienvenido, ${creado.name}.`),
+          el("p", {}, el("a", { href: "#/catalogo" }, "Ir al catálogo"))
+        )
       );
     } catch (error) {
       mostrarError(error);

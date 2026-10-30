@@ -4,6 +4,7 @@
 import { registrarRuta, iniciarRouter } from "./router.js";
 import { vistaCatalogo } from "./views/catalogo.js";
 import { vistaRegistro } from "./views/registro.js";
+import { vistaCuenta } from "./views/cuenta.js";
 import { vistaCarrito } from "./views/carrito.js";
 import { cantidadTotal, suscribir } from "./carrito.js";
 
@@ -11,6 +12,7 @@ import { cantidadTotal, suscribir } from "./carrito.js";
 // se agregan aquí con una línea más.
 registrarRuta("catalogo", { titulo: "Catálogo", vista: vistaCatalogo });
 registrarRuta("carrito", { titulo: "Carrito", vista: vistaCarrito });
+registrarRuta("cuenta", { titulo: "Mi cuenta", vista: vistaCuenta });
 registrarRuta("registro", { titulo: "Crear cuenta", vista: vistaRegistro });
 
 iniciarRouter(document.getElementById("app"), { porDefecto: "catalogo" });

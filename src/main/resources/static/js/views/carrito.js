@@ -155,7 +155,9 @@ export function vistaCarrito() {
       : el(
           "p",
           { class: "aviso info" },
-          "Para comprar primero necesitas una cuenta. ",
+          "Para comprar primero inicia sesión o crea una cuenta. ",
+          el("a", { href: "#/cuenta" }, "Iniciar sesión"),
+          " · ",
           el("a", { href: "#/registro" }, "Crear cuenta")
         );
 

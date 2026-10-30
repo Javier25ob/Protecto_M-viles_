@@ -25,7 +25,7 @@ export function iniciarRouter(contenedor, { porDefecto }) {
 
     // Resalta en el menú inferior la pantalla actual.
     document.querySelectorAll(".bottom-nav a").forEach((enlace) => {
-      if (enlace.dataset.ruta === nombreActivo) {
+      if (enlace.dataset.ruta.split(" ").includes(nombreActivo)) {
         enlace.setAttribute("aria-current", "page");
       } else {
         enlace.removeAttribute("aria-current");

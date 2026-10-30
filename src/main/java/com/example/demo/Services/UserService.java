@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.Exception.CredencialesInvalidasException;
 import com.example.demo.Models.UserModel;
 import com.example.demo.Repository.UserRepo;
 
@@ -29,5 +30,19 @@ public class UserService {
 
     public List<UserModel> listarUsuarios() {
         return userRepo.findAll();
+    }
+
+    /**
+     * Inicio de sesion: busca el usuario por email y compara la contrasena
+     * con el hash BCrypt guardado. Si algo no coincide lanza siempre el mismo error.
+     */
+    public UserModel iniciarSesion(String email, String password) {
+        UserModel usuario = userRepo.findByEmailIgnoreCase(email.trim())
+                .orElseThrow(CredencialesInvalidasException::new);
+
+        if (!passwordEncoder.matches(password, usuario.getPassword())) {
+            throw new CredencialesInvalidasException();
+        }
+        return usuario;
     }
 }

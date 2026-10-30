@@ -6,18 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.Dto.LoginRequest;
 import com.example.demo.Models.UserModel;
 import com.example.demo.Services.UserService;
 
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
 
 @RestController
 @RequestMapping("/api")
@@ -35,12 +34,20 @@ public class UserController {
 
     @GetMapping("/usuarios")
     public ResponseEntity<List<UserModel>> listarUsuarios() {
-    List<UserModel> usuarios = service.listarUsuarios();
+        List<UserModel> usuarios = service.listarUsuarios();
 
-    if (usuarios.isEmpty()) {
-        return ResponseEntity.noContent().build();
+        if (usuarios.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(usuarios); // 200
     }
-    return ResponseEntity.ok(usuarios); // 200
-}
-    
+
+    /**
+     * Inicio de sesion. Devuelve los datos del usuario (sin contrasena: el campo
+     * password es solo de escritura). Credenciales incorrectas -> 401.
+     */
+    @PostMapping("/usuarios/login")
+    public UserModel iniciarSesion(@Valid @RequestBody LoginRequest request) {
+        return service.iniciarSesion(request.getEmail(), request.getPassword());
+    }
 }

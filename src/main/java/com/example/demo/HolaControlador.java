@@ -1,8 +1,8 @@
 package com.example.demo;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -13,9 +13,6 @@ public class HolaControlador {
         return "Hola, MyOrbit API en funcionamiento";
     }
 
-    @GetMapping("/")
-    public String paginaPrincipal(){
-        return "Hola, esta es la pagina principal";
-    }
-
+    // OJO: aqui antes habia un @GetMapping("/") con un texto de prueba. Se quito a proposito:
+    // ahora la ruta "/" la responde la app web (src/main/resources/static/index.html).
 }

@@ -30,7 +30,7 @@ async function pedir(ruta, { method = "GET", body } = {}) {
     respuesta = await fetch(API_BASE + ruta, opciones);
   } catch {
     throw new ApiError(
-      `No se pudo conectar con el servidor (${API_BASE}). Verifica que la API esté corriendo.`
+      `No se pudo conectar con el servidor (${API_BASE || location.origin}). Verifica que la API esté corriendo.`
     );
   }
 
@@ -59,5 +59,6 @@ export const api = {
   listarCategorias: () => pedir("/api/categorias"),
   listarProductos: () => pedir("/api/productos"),
   registrarUsuario: (usuario) => pedir("/api/usuarios", { method: "POST", body: usuario }),
+  iniciarSesion: (credenciales) => pedir("/api/usuarios/login", { method: "POST", body: credenciales }),
   registrarVenta: (venta) => pedir("/api/ventas", { method: "POST", body: venta }),
 };

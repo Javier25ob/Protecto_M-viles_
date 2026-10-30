@@ -4,15 +4,15 @@
  * Qué hace:
  *  - Guarda en caché los archivos de la app (HTML, CSS, JS, íconos) para que
  *    la interfaz abra incluso sin internet.
- *  - NO guarda las respuestas de la API (otro origen: localhost:8080). Los
- *    productos y las ventas siempre se piden al servidor.
+ *  - NO guarda las respuestas de la API (/api/...). Los productos y las ventas
+ *    siempre se piden al servidor.
  *
  * Estrategia: "primero la red, si falla la caché". Así, mientras desarrollas,
  * ves tus cambios al recargar sin quedarte pegado con archivos viejos.
  *
  * Si agregas archivos nuevos a la app, añádelos a ARCHIVOS_APP y sube la VERSION.
  */
-const VERSION = "v2";
+const VERSION = "v3";
 const CACHE = `deposito-dental-${VERSION}`;
 
 const ARCHIVOS_APP = [
@@ -30,6 +30,7 @@ const ARCHIVOS_APP = [
   "js/util.js",
   "js/views/carrito.js",
   "js/views/catalogo.js",
+  "js/views/cuenta.js",
   "js/views/registro.js",
   "icons/icon-192.png",
   "icons/icon-512.png",
@@ -63,8 +64,11 @@ self.addEventListener("fetch", (evento) => {
   const peticion = evento.request;
   if (peticion.method !== "GET") return;
 
-  // La API (otro origen) y cualquier recurso externo van directo a la red.
-  if (new URL(peticion.url).origin !== self.location.origin) return;
+  // Recursos de otro origen, la API y Swagger van SIEMPRE directo a la red (nunca a la caché):
+  // ahora la app y la API comparten origen, así que hay que excluir las rutas del backend.
+  const url = new URL(peticion.url);
+  if (url.origin !== self.location.origin) return;
+  if (["/api/", "/swagger", "/v3/"].some((ruta) => url.pathname.startsWith(ruta))) return;
 
   evento.respondWith(
     fetch(peticion)
