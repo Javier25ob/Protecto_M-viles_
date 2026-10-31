@@ -5,6 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Exception.CredencialesInvalidasException;
+import com.example.demo.Models.Rol;
 import com.example.demo.Models.UserModel;
 import com.example.demo.Repository.UserRepo;
 
@@ -22,6 +23,7 @@ public class UserService {
             throw new IllegalArgumentException("Ya existe un usuario registrado con el email: " + user.getEmail());
         }
         user.setId(null);
+        user.setRol(Rol.USER); // el registro publico nunca crea administradores
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepo.save(user);
     }

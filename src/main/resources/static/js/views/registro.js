@@ -57,7 +57,13 @@ export function vistaRegistro() {
     boton
   );
 
-  return el("section", { class: "vista" }, formulario, mensajes);
+  return el(
+    "section",
+    { class: "vista" },
+    formulario,
+    mensajes,
+    el("p", { class: "marca" }, "¿Ya tienes cuenta? ", el("a", { href: "#/login" }, "Iniciar sesión"))
+  );
 
   // ---------------------------------------------------------------
 
@@ -77,14 +83,22 @@ export function vistaRegistro() {
     boton.textContent = "Registrando…";
     try {
       const creado = await api.registrarUsuario(usuario);
-      guardarUsuarioActual({ id: creado.id, name: creado.name, email: creado.email });
+      // El registro no entrega token: iniciamos sesión con los mismos datos para obtenerlo.
+      const sesion = await api.iniciarSesion({ email: usuario.email, password: usuario.password });
+      guardarUsuarioActual({
+        id: sesion.id,
+        name: sesion.name,
+        email: sesion.email,
+        rol: sesion.rol === "ADMIN" ? "ADMIN" : "USER",
+        token: sesion.token,
+      });
       formulario.reset();
       mensajes.replaceChildren(
         el(
           "div",
           { class: "aviso exito" },
           el("p", {}, `¡Registro exitoso! Bienvenido, ${creado.name}.`),
-          el("p", {}, el("a", { href: "#/catalogo" }, "Ir al catálogo"))
+          el("p", {}, el("a", { href: "#/inicio" }, "Ir al inicio"))
         )
       );
     } catch (error) {

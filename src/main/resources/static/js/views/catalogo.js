@@ -4,7 +4,9 @@
 import { api } from "../api.js";
 import { el } from "../dom.js";
 import { agregar, cantidadEnCarrito } from "../carrito.js";
-import { formatearPrecio, normalizar, urlImagenSegura } from "../util.js";
+import { esAdmin } from "../usuario.js";
+import { formatearPrecio, normalizar } from "../util.js";
+import { describirStock, recuadroImagen } from "../componentes.js";
 
 export function vistaCatalogo() {
   // Lo que la pantalla "recuerda" mientras está abierta.
@@ -13,6 +15,8 @@ export function vistaCatalogo() {
     categorias: [],
     categoriaId: null, // null = todas
     busqueda: "",
+    orden: "relevancia",
+    soloDisponibles: false,
   };
 
   const buscador = el("input", {
@@ -26,10 +30,54 @@ export function vistaCatalogo() {
     },
   });
   const filtros = el("div", { class: "chips", role: "group", "aria-label": "Categorías" });
+  const orden = el(
+    "select",
+    {
+      class: "selector-orden",
+      "aria-label": "Ordenar productos",
+      onchange: (e) => {
+        estado.orden = e.target.value;
+        pintarLista();
+      },
+    },
+    el("option", { value: "relevancia" }, "Ordenar: Relevancia"),
+    el("option", { value: "precio-asc" }, "Menor precio"),
+    el("option", { value: "precio-desc" }, "Mayor precio"),
+    el("option", { value: "nombre" }, "Nombre A–Z")
+  );
+  const soloDisponibles = el("input", {
+    type: "checkbox",
+    id: "solo-disponibles",
+    onchange: (e) => {
+      estado.soloDisponibles = e.target.checked;
+      pintarLista();
+    },
+  });
+  const contador = el("p", { class: "contador", "aria-live": "polite" });
   const zonaEstado = el("div");
   const lista = el("div", { class: "grid" });
 
-  const raiz = el("section", { class: "vista" }, buscador, filtros, zonaEstado, lista);
+  const raiz = el(
+    "section",
+    { class: "vista" },
+    el(
+      "div",
+      { class: "barra-catalogo" },
+      buscador,
+      // Crear productos es solo del administrador
+      esAdmin() && el("a", { class: "btn btn-enlace btn-nuevo", href: "#/nuevo-producto" }, "+ Nuevo")
+    ),
+    filtros,
+    el(
+      "div",
+      { class: "controles-catalogo" },
+      orden,
+      el("label", { class: "check", for: "solo-disponibles" }, soloDisponibles, "Solo disponibles")
+    ),
+    contador,
+    zonaEstado,
+    lista
+  );
   cargar();
   return raiz;
 
@@ -94,8 +142,18 @@ export function vistaCatalogo() {
       const coincideCategoria = estado.categoriaId === null || p.categoriaId === estado.categoriaId;
       const coincideTexto =
         texto === "" || normalizar(`${p.nombre} ${p.marca ?? ""} ${p.descripcion ?? ""}`).includes(texto);
-      return coincideCategoria && coincideTexto;
+      const coincideStock = !estado.soloDisponibles || (p.stock ?? 0) > 0;
+      return coincideCategoria && coincideTexto && coincideStock;
     });
+
+    if (estado.orden === "precio-asc") visibles.sort((a, b) => a.precio - b.precio);
+    else if (estado.orden === "precio-desc") visibles.sort((a, b) => b.precio - a.precio);
+    else if (estado.orden === "nombre") visibles.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+
+    contador.textContent =
+      estado.productos.length === 0
+        ? ""
+        : `${visibles.length} ${visibles.length === 1 ? "producto" : "productos"}`;
 
     if (visibles.length === 0) {
       const mensaje =
@@ -111,27 +169,17 @@ export function vistaCatalogo() {
 
 function tarjetaProducto(producto, nombresCategoria) {
   const stock = describirStock(producto);
-  const urlImagen = urlImagenSegura(producto.imagenUrl);
-
-  const recuadroImagen = el("div", { class: "card-img" });
-  if (urlImagen) {
-    const imagen = el("img", { src: urlImagen, alt: producto.nombre, loading: "lazy" });
-    // Si la imagen no carga (enlace roto), mostramos el recuadro vacío.
-    imagen.addEventListener("error", () => recuadroImagen.replaceChildren("Sin imagen"));
-    recuadroImagen.append(imagen);
-  } else {
-    recuadroImagen.append("Sin imagen");
-  }
+  const enlaceDetalle = `#/producto/${encodeURIComponent(producto.id)}`;
 
   return el(
     "article",
     { class: "card" },
-    recuadroImagen,
+    el("a", { class: "card-enlace", href: enlaceDetalle, "aria-label": `Ver ${producto.nombre}` }, recuadroImagen(producto)),
     el(
       "div",
       { class: "card-body" },
       el("span", { class: "etiqueta" }, nombresCategoria.get(producto.categoriaId) ?? "Sin categoría"),
-      el("h3", {}, producto.nombre),
+      el("h3", {}, el("a", { class: "card-enlace", href: enlaceDetalle }, producto.nombre)),
       producto.marca && el("p", { class: "marca" }, producto.marca),
       el("p", { class: "precio" }, formatearPrecio(producto.precio)),
       el("p", { class: `stock ${stock.clase}` }, stock.texto),
@@ -166,12 +214,4 @@ function botonAgregar(producto) {
       boton.textContent = enCarrito > 0 ? `Agregar otro (en carrito: ${enCarrito})` : "Agregar";
     }
   }
-}
-
-function describirStock(producto) {
-  const stock = producto.stock ?? 0;
-  const minimo = producto.stockMinimo ?? 0;
-  if (stock <= 0) return { texto: "Agotado", clase: "agotado" };
-  if (stock <= minimo) return { texto: `Pocas unidades (${stock})`, clase: "pocas" };
-  return { texto: `Disponible: ${stock}`, clase: "" };
 }

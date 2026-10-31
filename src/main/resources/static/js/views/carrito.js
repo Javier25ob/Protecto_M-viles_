@@ -95,7 +95,7 @@ export function vistaCarrito() {
       el(
         "div",
         { class: "item-info" },
-        el("h3", {}, item.nombre),
+        el("h3", {}, el("a", { class: "card-enlace", href: `#/producto/${encodeURIComponent(item.id)}` }, item.nombre)),
         el("p", { class: "marca" }, `${formatearPrecio(item.precio)} c/u`)
       ),
       el(
@@ -156,7 +156,7 @@ export function vistaCarrito() {
           "p",
           { class: "aviso info" },
           "Para comprar primero inicia sesión o crea una cuenta. ",
-          el("a", { href: "#/cuenta" }, "Iniciar sesión"),
+          el("a", { href: "#/login" }, "Iniciar sesión"),
           " · ",
           el("a", { href: "#/registro" }, "Crear cuenta")
         );
@@ -279,7 +279,8 @@ export function vistaCarrito() {
           el("span", {}, "Total pagado"),
           el("strong", {}, formatearPrecio(venta.total))
         ),
-        el("a", { class: "btn btn-enlace", href: "#/catalogo" }, "Seguir comprando")
+        el("a", { class: "btn btn-enlace", href: "#/catalogo" }, "Seguir comprando"),
+        el("p", { class: "marca" }, el("a", { href: "#/compras" }, "Ver mis compras"))
       )
     );
   }

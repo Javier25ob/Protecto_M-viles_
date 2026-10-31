@@ -93,15 +93,21 @@ export function suscribir(aviso) {
 
 // ---------- Cambios ----------
 
-/** Agrega una unidad. Devuelve { ok: true } o { ok: false, motivo: "agotado" | "limite" }. */
-export function agregar(producto) {
+/**
+ * Agrega unidades (1 por defecto), sin pasar del stock.
+ * Devuelve { ok: true, agregadas } o { ok: false, motivo: "agotado" | "limite" }.
+ */
+export function agregar(producto, cantidad = 1) {
   const stock = producto.stock ?? 0;
   if (stock <= 0) return { ok: false, motivo: "agotado" };
 
   const existente = items.find((i) => i.id === producto.id);
+  const disponible = stock - (existente?.cantidad ?? 0);
+  if (disponible <= 0) return { ok: false, motivo: "limite" };
+  const agregadas = Math.min(Math.max(1, Math.floor(Number(cantidad)) || 1), disponible);
+
   if (existente) {
-    if (existente.cantidad >= stock) return { ok: false, motivo: "limite" };
-    existente.cantidad += 1;
+    existente.cantidad += agregadas;
     // Refrescamos la foto con los datos más recientes del catálogo.
     existente.nombre = producto.nombre;
     existente.precio = producto.precio;
@@ -112,11 +118,11 @@ export function agregar(producto) {
       nombre: producto.nombre,
       precio: producto.precio,
       stock,
-      cantidad: 1,
+      cantidad: agregadas,
     });
   }
   guardar();
-  return { ok: true };
+  return { ok: true, agregadas };
 }
 
 /** Fija la cantidad de un producto. 0 o menos lo quita; más del stock se recorta al stock. */

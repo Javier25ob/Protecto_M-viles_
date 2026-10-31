@@ -1,89 +1,83 @@
-// Pantalla "Cuenta": si hay sesión muestra los datos del usuario y permite cerrarla;
-// si no, muestra el formulario de inicio de sesión.
-// Usa: POST /api/usuarios/login  con { email, password }
-//
-// OJO: el backend verifica el correo y la contraseña, pero todavía NO entrega un token.
-// La app solo recuerda { id, name, email } en este navegador (localStorage).
+// Pantalla "Cuenta": datos del usuario con sesión iniciada y botón para cerrarla.
+// (El inicio de sesión está en views/login.js; sin sesión el router ni siquiera llega aquí.)
 
-import { api, ApiError } from "../api.js";
 import { el } from "../dom.js";
-import { guardarUsuarioActual, obtenerUsuarioActual, olvidarUsuarioActual } from "../usuario.js";
+import { vaciar } from "../carrito.js";
+import { obtenerUsuarioActual, olvidarUsuarioActual, esAdmin } from "../usuario.js";
+import { puedeInstalar, yaInstalada, esIOS, instalar, suscribirInstalacion } from "../instalar.js";
 
 export function vistaCuenta() {
-  const raiz = el("section", { class: "vista" });
-  pintar();
-  return raiz;
+  const usuario = obtenerUsuarioActual() ?? {};
+  const tarjetaInstalar = el("div", { class: "formulario tarjeta-instalar" });
+  pintarInstalacion();
+  suscribirInstalacion(() => {
+    if (tarjetaInstalar.isConnected) pintarInstalacion();
+  });
 
-  // ---------------------------------------------------------------
-
-  function pintar() {
-    const usuario = obtenerUsuarioActual();
-    raiz.replaceChildren(usuario?.id ? pintarPerfil(usuario) : pintarLogin());
-  }
-
-  function pintarPerfil(usuario) {
-    return el(
+  return el(
+    "section",
+    { class: "vista" },
+    el(
       "div",
       { class: "formulario" },
       el("h2", {}, "Tu cuenta"),
       el("p", { class: "dato" }, el("span", { class: "marca" }, "Nombre"), el("strong", {}, usuario.name ?? "—")),
       el("p", { class: "dato" }, el("span", { class: "marca" }, "Correo"), el("strong", {}, usuario.email ?? "—")),
-      el("a", { class: "btn btn-enlace", href: "#/catalogo" }, "Ir al catálogo"),
+      el(
+        "p",
+        { class: "dato" },
+        el("span", { class: "marca" }, "Rol"),
+        el("span", { class: `insignia-rol${esAdmin() ? " admin" : ""}` }, esAdmin() ? "Administrador" : "Cliente")
+      ),
+      el("a", { class: "btn btn-enlace", href: "#/compras" }, "Ver mis compras"),
+      // Lo siguiente es solo del administrador
+      esAdmin() && el("a", { class: "btn btn-enlace btn-claro", href: "#/reporte" }, "Reporte de ventas"),
+      esAdmin() && el("a", { class: "btn btn-enlace btn-claro", href: "#/inventario" }, "Gestionar productos"),
       el(
         "button",
-        {
-          type: "button",
-          class: "btn-texto",
-          onclick: () => {
-            olvidarUsuarioActual();
-            pintar();
-          },
-        },
+        { type: "button", class: "btn-texto", onclick: cerrarSesion },
         "Cerrar sesión"
       )
-    );
+    ),
+    tarjetaInstalar
+  );
+
+  // Instalar la app en el celular: botón si el navegador lo permite; si no, los pasos a mano.
+  function pintarInstalacion() {
+    const partes = [el("h2", {}, "Instalar en tu celular")];
+    if (yaInstalada()) {
+      partes.push(el("p", { class: "aviso exito" }, "✓ La app ya está instalada en este dispositivo."));
+    } else if (puedeInstalar()) {
+      partes.push(
+        el("p", { class: "marca" }, "Instálala y ábrela desde tu pantalla de inicio, como cualquier app."),
+        el("button", { type: "button", class: "btn", onclick: () => instalar() }, "Instalar app")
+      );
+    } else if (esIOS()) {
+      partes.push(
+        el("p", { class: "marca" }, "En iPhone o iPad, desde Safari:"),
+        el("ol", { class: "pasos" },
+          el("li", {}, "Toca el botón Compartir (el cuadrado con la flecha hacia arriba)."),
+          el("li", {}, "Elige «Añadir a pantalla de inicio»."),
+          el("li", {}, "Toca «Añadir».")
+        )
+      );
+    } else {
+      partes.push(
+        el("p", { class: "marca" }, "En Chrome (Android), si no ves el botón de instalar:"),
+        el("ol", { class: "pasos" },
+          el("li", {}, "Abre el menú ⋮ del navegador."),
+          el("li", {}, "Elige «Instalar aplicación» o «Añadir a la pantalla de inicio»."),
+          el("li", {}, "Confirma con «Instalar».")
+        ),
+        el("p", { class: "marca" }, "La instalación solo está disponible con una dirección segura (https://).")
+      );
+    }
+    tarjetaInstalar.replaceChildren(...partes);
   }
 
-  function pintarLogin() {
-    const mensajes = el("div", { role: "alert" });
-    const email = el("input", { id: "login-email", name: "email", type: "email", autocomplete: "email", required: true });
-    const clave = el("input", {
-      id: "login-password",
-      name: "password",
-      type: "password",
-      autocomplete: "current-password",
-      required: true,
-    });
-    const boton = el("button", { type: "submit", class: "btn" }, "Iniciar sesión");
-
-    const formulario = el(
-      "form",
-      { class: "formulario", onsubmit: enviar },
-      el("h2", {}, "Iniciar sesión"),
-      el("div", { class: "campo" }, el("label", { for: email.id }, "Correo electrónico"), email),
-      el("div", { class: "campo" }, el("label", { for: clave.id }, "Contraseña"), clave),
-      boton,
-      el("p", { class: "marca" }, "¿No tienes cuenta? ", el("a", { href: "#/registro" }, "Crear cuenta"))
-    );
-
-    return el("div", { class: "vista" }, formulario, mensajes);
-
-    async function enviar(evento) {
-      evento.preventDefault();
-      mensajes.replaceChildren();
-      boton.disabled = true;
-      boton.textContent = "Ingresando…";
-      try {
-        const usuario = await api.iniciarSesion({ email: email.value.trim(), password: clave.value });
-        guardarUsuarioActual({ id: usuario.id, name: usuario.name, email: usuario.email });
-        location.hash = "#/catalogo";
-      } catch (error) {
-        const texto = error instanceof ApiError ? error.message : "Ocurrió un error inesperado.";
-        mensajes.replaceChildren(el("p", { class: "aviso error" }, texto));
-        clave.value = "";
-        boton.disabled = false;
-        boton.textContent = "Iniciar sesión";
-      }
-    }
+  function cerrarSesion() {
+    olvidarUsuarioActual();
+    vaciar(); // el carrito era de esta sesión
+    location.replace("#/login");
   }
 }

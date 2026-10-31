@@ -12,7 +12,7 @@
  *
  * Si agregas archivos nuevos a la app, añádelos a ARCHIVOS_APP y sube la VERSION.
  */
-const VERSION = "v3";
+const VERSION = "v10";
 const CACHE = `deposito-dental-${VERSION}`;
 
 const ARCHIVOS_APP = [
@@ -23,24 +23,36 @@ const ARCHIVOS_APP = [
   "js/app.js",
   "js/api.js",
   "js/carrito.js",
+  "js/componentes.js",
   "js/config.js",
   "js/dom.js",
+  "js/instalar.js",
   "js/router.js",
   "js/usuario.js",
   "js/util.js",
   "js/views/carrito.js",
   "js/views/catalogo.js",
+  "js/views/compras.js",
+  "js/views/formulario-producto.js",
+  "js/views/inventario.js",
+  "js/views/producto.js",
+  "js/views/inicio.js",
   "js/views/cuenta.js",
+  "js/views/login.js",
   "js/views/registro.js",
+  "js/views/reporte.js",
   "icons/icon-192.png",
   "icons/icon-512.png",
+  "icons/icon-maskable-512.png",
+  "icons/logo.svg",
 ];
 
 self.addEventListener("install", (evento) => {
   evento.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll(ARCHIVOS_APP))
+      // cache: "reload" = pedir siempre al servidor (no copiar archivos viejos de la caché del navegador)
+      .then((cache) => cache.addAll(ARCHIVOS_APP.map((ruta) => new Request(ruta, { cache: "reload" }))))
       .then(() => self.skipWaiting())
   );
 });
@@ -71,7 +83,8 @@ self.addEventListener("fetch", (evento) => {
   if (["/api/", "/swagger", "/v3/"].some((ruta) => url.pathname.startsWith(ruta))) return;
 
   evento.respondWith(
-    fetch(peticion)
+    // cache: "no-cache" = preguntar al servidor si el archivo cambió; así el celular no se queda con una versión vieja
+    fetch(peticion, { cache: "no-cache" })
       .then((respuesta) => {
         if (respuesta.ok) {
           const copia = respuesta.clone();

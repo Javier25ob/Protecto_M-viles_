@@ -29,6 +29,11 @@ public class UserModel {
 
     private String telf;
 
+    // Solo de lectura para el cliente: nadie puede darse el rol ADMIN mandandolo en el JSON.
+    // Los usuarios que ya existian sin este campo quedan como USER.
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Rol rol = Rol.USER;
+
     public UserModel() {
     }
 
@@ -77,5 +82,13 @@ public class UserModel {
 
     public void setTelf(String telf) {
         this.telf = telf;
+    }
+
+    public Rol getRol() {
+        return rol == null ? Rol.USER : rol;
+    }
+
+    public void setRol(Rol rol) {
+        this.rol = rol;
     }
 }

@@ -26,3 +26,17 @@ export function el(etiqueta, atributos = {}, ...hijos) {
   }
   return nodo;
 }
+
+// Icono SVG de 24x24 a partir del trazo ("d") de un <path>. Se crea con la API del DOM,
+// sin innerHTML: el trazo es siempre una constante del código.
+const NS_SVG = "http://www.w3.org/2000/svg";
+
+export function icono(trazo) {
+  const svg = document.createElementNS(NS_SVG, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS(NS_SVG, "path");
+  path.setAttribute("d", trazo);
+  svg.append(path);
+  return svg;
+}

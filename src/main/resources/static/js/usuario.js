@@ -1,10 +1,11 @@
-// Guarda en el navegador (localStorage) el usuario que se acaba de registrar.
+// Sesión del navegador (localStorage): { id, name, email, rol, token }.
 //
-// OJO: esto NO es un inicio de sesión (el backend todavía no tiene login).
-// Solo recordamos el id para poder asociar las compras a ese usuario en el
-// siguiente módulo (POST /api/ventas necesita un usuarioId).
+// El token lo entrega el backend al iniciar sesión (POST /api/usuarios/login) y se envía en
+// cada petición (ver api.js). El ROL ("ADMIN" o "USER") sirve aquí solo para mostrar u ocultar
+// opciones; quien realmente decide qué se puede hacer es el servidor, que revisa el token.
 
 const CLAVE = "deposito-dental:usuario";
+const CLAVE_AVISO = "deposito-dental:aviso";
 
 export function guardarUsuarioActual(usuario) {
   try {
@@ -23,11 +24,44 @@ export function obtenerUsuarioActual() {
   }
 }
 
-// Se usa cuando el servidor dice que ese usuario ya no existe (ej. se reinició la base de datos).
+// Hay sesión solo si tenemos usuario Y token (las sesiones anteriores a los roles no tienen token).
+export function haySesion() {
+  const usuario = obtenerUsuarioActual();
+  return Boolean(usuario?.id && usuario?.token);
+}
+
+export function esAdmin() {
+  return haySesion() && obtenerUsuarioActual().rol === "ADMIN";
+}
+
+export function obtenerToken() {
+  return obtenerUsuarioActual()?.token ?? null;
+}
+
+// Se usa al cerrar sesión, o cuando el servidor dice que el token venció o el usuario ya no existe.
 export function olvidarUsuarioActual() {
   try {
     localStorage.removeItem(CLAVE);
   } catch {
     // sin almacenamiento: no hay nada que olvidar
+  }
+}
+
+// Mensaje para mostrar en el login después de que la sesión se cerró sola (ej. "tu sesión venció").
+export function dejarAviso(texto) {
+  try {
+    sessionStorage.setItem(CLAVE_AVISO, texto);
+  } catch {
+    // sin almacenamiento: simplemente no se muestra el aviso
+  }
+}
+
+export function tomarAviso() {
+  try {
+    const texto = sessionStorage.getItem(CLAVE_AVISO);
+    sessionStorage.removeItem(CLAVE_AVISO);
+    return texto;
+  } catch {
+    return null;
   }
 }

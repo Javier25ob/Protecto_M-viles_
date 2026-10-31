@@ -6,9 +6,15 @@
   <title>Depósito Dental</title>
   <meta name="description" content="Suministros para laboratorios dentales: catálogo y pedidos.">
   <meta name="theme-color" content="#0b6fb8">
+  <!-- iPhone/iPad: al añadirla a la pantalla de inicio se abre como app -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Depósito Dental">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="icons/logo.svg">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -16,14 +22,23 @@
 
   <!-- SPA: esta es la UNICA página. Las "pantallas" se dibujan dentro de <main id="app">. -->
   <header class="topbar">
-    <h1 id="titulo">Depósito Dental</h1>
+    <div class="topbar-izq">
+      <button id="btn-volver" class="btn-volver" type="button" hidden aria-label="Volver">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg>
+      </button>
+      <h1 id="titulo">Depósito Dental</h1>
+    </div>
     <button id="btn-instalar" class="btn-instalar" type="button" hidden>Instalar app</button>
   </header>
 
   <main id="app" aria-live="polite"></main>
 
-  <nav class="bottom-nav" aria-label="Navegación principal">
-    <a href="#/catalogo" data-ruta="catalogo">
+  <nav class="bottom-nav" aria-label="Navegación principal" hidden>
+    <a href="#/inicio" data-ruta="inicio">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg>
+      <span>Inicio</span>
+    </a>
+    <a href="#/catalogo" data-ruta="catalogo producto nuevo-producto editar-producto inventario">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>
       <span>Catálogo</span>
     </a>
@@ -33,6 +48,10 @@
         <span id="insignia-carrito" class="insignia" hidden>0</span>
       </span>
       <span>Carrito</span>
+    </a>
+    <a href="#/compras" data-ruta="compras">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h12a1 1 0 0 1 1 1v19l-3-2-2 2-2-2-2 2-2-2-3 2V3a1 1 0 0 1 1-1zm2 5v2h8V7zm0 4v2h8v-2zm0 4v2h5v-2z"/></svg>
+      <span>Compras</span>
     </a>
     <a href="#/cuenta" data-ruta="cuenta registro">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
